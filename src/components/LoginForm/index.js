@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState } from 'react';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
@@ -12,6 +13,7 @@ import logo from '../../assets/logo.svg';
 
 export default function LoginForm() {
   const [showAlert, setShowAlert] = useState(false);
+  const [errors, setErrors] = useState({ email: "", password: "" });
   const validateForm = (event) => {
     event.preventDefault()
     const data = new FormData(event.currentTarget);
@@ -19,6 +21,22 @@ export default function LoginForm() {
     const password = data.get('password');
 
     // Add validation code here
+    const validator = require("email-validator");
+    if (!email) {
+      setErrors((prev) => ({ ...prev, email: "Email is required" }));
+      return (true);
+      //error: true, helperText: "Email is required"
+    }
+    if (!validator.validate(email)) {
+      setErrors((prev) => ({ ...prev, email: "Enter a valid email address" }));
+      return (true);
+      // error: true, helperText: "Enter a valid email address"
+    }
+
+    if (password.length < 8 || !/[A-Z]/.test(password) || !/[0-9]/.test(password) || !/[^A-Za-z0-9]/.test(password)) {
+      setErrors((prev) => ({ ...prev, password: "Password must be atleast 8 characters, contain 1 numerical digit, 1 special character, both uppercase and lowercase." }))
+      return (true);
+    }
 
   }
 
@@ -29,7 +47,9 @@ export default function LoginForm() {
       email: data.get('email'),
       password: data.get('password'),
     });
-    validateForm(event);
+    if (validateForm(event)) {
+      return
+    };
     setShowAlert("Login Successful");
   };
 
@@ -87,6 +107,8 @@ export default function LoginForm() {
               name="email"
               autoComplete="email"
               autoFocus
+              error={Boolean(errors.email)}
+              helperText={errors.email}
             />
             <TextField
               margin="normal"
@@ -97,6 +119,8 @@ export default function LoginForm() {
               type="password"
               id="password"
               autoComplete="current-password"
+              error={Boolean(errors.password)}
+              helperText={errors.password}
             />
             <Button
               type="submit"
